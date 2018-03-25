@@ -1,15 +1,17 @@
 const User = require('../models/userModel');
 const bcrypt = require('bcrypt');
+const { mysecret } = require('../../config');
+const jwt = require('jsonwebtoken');
 
 const login = (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) {
-    res.status(STATUS_USER_ERROR).json(sendUserError('Must provide a username and a password!', res));
+    res.status(STATUS_USER_ERROR).json({ message: 'Must provide a username and a password!', res });
   } else {
     User.findOne({ username })
       .then(user => {
         if (!user) {
-          res.status(404).json(sendUserError('No such user found!', res));
+          res.status(404).json({ message: 'No such user found!', res });
         } else {
           const hashedPass = user.password;
           bcrypt
@@ -18,10 +20,14 @@ const login = (req, res) => {
               if (res === false) throw new Error(); 
             })
             .then(() => {
-              res.json({ success: true });
+              const payload = {
+                username: user.username
+              };
+              const token = jwt.sign(payload, mysecret);
+              res.json({ token });
             })
             .catch(err => {
-              res.status(500).json(sendUserError('There wasn an error!', res));
+              res.status(500).json({ message: 'There wasn an error!', res });
             });
         }         
       });
