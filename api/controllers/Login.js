@@ -4,7 +4,9 @@ const { mysecret } = require('../../config');
 const jwt = require('jsonwebtoken');
 
 const login = (req, res) => {
-  const { username, password } = req.body;
+  let { username } = req.body;
+  username = username.toLowerCase();
+  const { password } = req.body;
   if (!username || !password) {
     res.status(STATUS_USER_ERROR).json({ message: 'Must provide a username and a password!', res });
   } else {
